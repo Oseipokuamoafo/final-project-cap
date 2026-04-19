@@ -49,7 +49,7 @@ def run_profile(profile: dict, songs: list, use_rag: bool = False) -> None:
     print(f"Prefs:   {prefs}")
     print("-" * 55)
 
-    if use_rag and os.getenv("ANTHROPIC_API_KEY"):
+    if use_rag and (os.getenv("GROQ_API_KEY") or os.getenv("ANTHROPIC_API_KEY")):
         from rag_recommender import rag_recommend
         try:
             result = rag_recommend(prefs, songs, k=5)

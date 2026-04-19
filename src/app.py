@@ -24,7 +24,7 @@ def get_songs():
 
 
 def _has_api_key() -> bool:
-    return bool(os.getenv("ANTHROPIC_API_KEY"))
+    return bool(os.getenv("GROQ_API_KEY") or os.getenv("ANTHROPIC_API_KEY"))
 
 
 def _run_rag(prefs, songs, k):
@@ -36,7 +36,8 @@ def _run_rag(prefs, songs, k):
 st.set_page_config(page_title="Music Recommender", page_icon="🎵", layout="centered")
 st.title("🎵 AI Music Recommender")
 st.caption(
-    "Content-based filtering + RAG-powered summaries (requires `ANTHROPIC_API_KEY`)."
+    "Content-based filtering + RAG-powered summaries. "
+    "Set `GROQ_API_KEY` (free) or `ANTHROPIC_API_KEY` to enable AI summaries."
 )
 
 songs = get_songs()
@@ -82,8 +83,8 @@ if run_btn:
                 retrieved = recommend_songs(prefs, songs, k=k)
     else:
         st.caption(
-            "ℹ️ No `ANTHROPIC_API_KEY` found — running in scored-only mode. "
-            "Set the key to enable AI summaries."
+            "ℹ️ No API key found — running in scored-only mode. "
+            "Set GROQ_API_KEY (free at console.groq.com) to enable AI summaries."
         )
         retrieved = recommend_songs(prefs, songs, k=k)
 

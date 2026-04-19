@@ -1,5 +1,7 @@
 anthropic>=0.40.0
+groq>=0.9.0
 pandas
 pytest
 python-dotenv
+requests
 streamlit
