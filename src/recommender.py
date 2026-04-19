@@ -133,6 +133,23 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, str]:
     return round(score, 2), explanation
 
 
+def max_possible_score(user_prefs: Dict) -> float:
+    """Theoretical maximum score any song could earn for these preferences."""
+    base = 2.0 + 1.5 + 1.0  # genre + mood + perfect energy proximity
+    if user_prefs.get("likes_acoustic", False):
+        base += 0.5
+    return base
+
+
+def confidence_score(top_score: float, user_prefs: Dict) -> float:
+    """
+    Ratio of the top song's score to the theoretical maximum (0.0–1.0).
+    A score of 1.0 means the best available song matched every criterion perfectly.
+    """
+    maximum = max_possible_score(user_prefs)
+    return round(min(top_score / maximum, 1.0), 3) if maximum > 0 else 0.0
+
+
 def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
     """
     Score every song against user preferences and return the top k results.
