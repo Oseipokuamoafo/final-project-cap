@@ -28,18 +28,13 @@ def get_csv_songs():
 
 @st.cache_data(ttl=300)
 def get_spotify_songs(genre: str) -> list:
-    """Fetch live Spotify tracks for *genre*. Cached for 5 minutes per genre."""
+    """Fetch live Spotify tracks for *genre* via SpotAPI. Cached 5 min per genre."""
     from spotify_client import fetch_songs_by_genre
-    return fetch_songs_by_genre(
-        genre,
-        os.getenv("SPOTIFY_CLIENT_ID", ""),
-        os.getenv("SPOTIFY_CLIENT_SECRET", ""),
-        limit=10,
-    )
+    return fetch_songs_by_genre(genre, limit=20)
 
 
 def _has_spotify() -> bool:
-    return bool(os.getenv("SPOTIFY_CLIENT_ID") and os.getenv("SPOTIFY_CLIENT_SECRET"))
+    return True  # SpotAPI needs no credentials
 
 
 def _has_llm_key() -> bool:
@@ -63,10 +58,7 @@ with st.sidebar:
     likes_acoustic = st.checkbox("I like acoustic tracks")
     k = st.slider("Number of recommendations", 3, 10, 5)
     st.divider()
-    if _has_spotify():
-        st.success("🟢 Spotify connected — live songs")
-    else:
-        st.caption("Add SPOTIFY_CLIENT_ID + SPOTIFY_CLIENT_SECRET for live songs.")
+    st.success("🟢 Spotify connected — live songs")
     if _has_llm_key():
         backend = "Groq" if os.getenv("GROQ_API_KEY") else "Claude"
         st.success(f"🟢 {backend} connected — AI summaries on")
