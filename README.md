@@ -1,6 +1,6 @@
-# AI Music Recommender — Applied AI Capstone
+# VibeFinder — AI Music Recommender
 
-> A production-style music recommendation system that combines rule-based content filtering with a Retrieval-Augmented Generation (RAG) pipeline powered by Claude Haiku. Built as a capstone evolution of a Module 1–3 simulation project.
+> A production-style music recommender that listens to how you feel, reads your recent listening history, and pulls real Spotify songs that match your current vibe — powered by a RAG pipeline, a free Groq LLM, and SpotAPI for live song data. Built as a capstone evolution of a Module 1–3 simulation project.
 
 **Video Walkthrough:** [Add Loom link here after recording]
 **GitHub:** https://github.com/Oseipokuamoafo/final-project-cap
@@ -17,11 +17,13 @@ The original project built a content-based music recommender that scored songs a
 
 ## What This Project Does and Why It Matters
 
-This capstone takes that simulation and upgrades it into a **full AI-powered application** with three meaningful additions:
+This capstone takes that simulation and upgrades it into a **full AI-powered application** with five meaningful additions:
 
-1. **RAG pipeline** — when an API key is present, the system retrieves the top-k matching songs using the existing scoring logic, formats them as structured context, and passes that context to Claude Haiku to generate a natural-language recommendation summary. The LLM never guesses blindly; it only comments on songs that were mathematically retrieved first.
-2. **Input guardrails** — all user preferences are validated before any scoring runs: energy is clamped to `[0.0, 1.0]`, unknown genres and moods produce logged warnings instead of silent failures, and type errors surface as clear messages.
-3. **Structured logging** — every step from input validation through LLM generation is recorded to both the console and a local log file, making the system auditable and debuggable.
+1. **Mood-aware discovery** — users describe how they feel in plain English ("stressed, need to decompress") or paste songs they've been listening to, and a Groq LLM extracts structured music preferences automatically. No sliders required.
+2. **Live Spotify data** — instead of an 18-song CSV, the system fetches real tracks from Spotify via SpotAPI (no API key, no result limits) for whatever genre the user's mood maps to.
+3. **RAG pipeline** — retrieved songs are passed as structured context to a free Groq LLM (llama-3.1-8b-instant), which generates a natural-language summary explaining why the top picks fit the user's profile. The LLM never guesses blindly; it only comments on songs that were mathematically ranked first.
+4. **Input guardrails** — all preferences are validated before scoring: energy is clamped to `[0.0, 1.0]`, unknown genres and moods produce logged warnings, and type errors surface as clear messages.
+5. **Structured logging** — every step from mood parsing through LLM generation is recorded to both the console and a log file, making the system auditable.
 
 This matters because it demonstrates a pattern that appears in nearly every real production AI system: **retrieve first, then generate**. The LLM is not doing the ranking — the deterministic scoring engine is. The LLM is doing what it is actually good at: synthesizing structured data into readable, human-friendly prose. Keeping those responsibilities separate makes the system more reliable, more testable, and easier to explain.
 
@@ -64,7 +66,9 @@ The test suite sits outside the runtime loop and verifies each component indepen
 ### Prerequisites
 
 - Python 3.11 or higher
-- An [Anthropic API key](https://console.anthropic.com) *(optional — system runs in scored-only mode without one)*
+- A free [Groq API key](https://console.groq.com) *(recommended — enables mood parsing + AI summaries, no credit card)*
+- An [Anthropic API key](https://console.anthropic.com) *(alternative to Groq — paid)*
+- No Spotify credentials needed — live song data is fetched via SpotAPI
 
 ### 1. Clone the repository
 
@@ -123,53 +127,40 @@ Expected output: **17 tests, all passing**, in under 1 second.
 
 ## Sample Interactions
 
-### Example 1 — High-Energy Pop Fan (CLI, scored-only mode)
+### Example 1 — Mood from plain English (Streamlit, Mode 1)
 
-**Input:**
-```
-genre=pop, mood=happy, energy=0.85, likes_acoustic=False
-```
+**Input (typed into the mood box):**
+> "I've been stressed from school all week and just want something calm to decompress tonight"
 
-**Output:**
+**Groq inference:**
 ```
-Profile: High-Energy Pop Fan
--------------------------------------------------------
-  1. Sunrise City by Neon Echo
-     Score: 4.47 | genre match: pop (+2.0); mood match: happy (+1.5); energy similarity (+0.97)
-  2. Rooftop Lights by Indigo Parade
-     Score: 3.01 | mood match: happy (+1.5); energy similarity (+0.91)
-  3. Gym Hero by Max Pulse
-     Score: 2.98 | genre match: pop (+2.0); energy similarity (+0.92)
-  4. Sunset Boulevard by Coral Drive
-     Score: 2.83 | mood match: happy (+1.5); energy similarity (+0.83)
-  5. Neon Cascade by Prism Circuit
-     Score: 0.98 | energy similarity (+0.98)
+Vibe detected: Relaxed · Lofi · 20% energy · Acoustic preferred
+Reasoning: User needs calming, low-energy music with warm acoustic texture to unwind.
 ```
 
-**What this shows:** Genre + mood together dominate the ranking. Neon Cascade sneaks into #5 with zero genre/mood match — purely on energy proximity (0.83 vs target 0.85). This is a known edge case of the scoring model.
+**AI Summary (Groq):**
+> Your top pick is **Lo-Fi Chill** — it matches every preference: lofi genre, relaxed mood, gentle energy at 0.32, and strong acousticness. Right behind it is **Distant Lover** by Marvin Gaye — a classic that crosses into soul territory but carries the same low-energy, warm acoustic feel your profile is calling for. Every track in your top 5 stays below 0.4 energy, which shows the system has a clear read on what you need tonight.
 
 ---
 
-### Example 2 — Chill Lofi Listener (Streamlit, RAG mode)
+### Example 2 — Mood guessed from recent songs (Streamlit, Mode 2)
 
-**Input:**
+**Input (pasted into "recent songs" box):**
 ```
-genre=lofi, mood=chill, energy=0.38, likes_acoustic=True
-```
-
-**AI Summary (Claude Haiku):**
-> Your perfect match is **Library Rain** by Paper Lanterns — it hits every single one of your preferences at once: the genre, the chill mood, low energy at 0.35, and an acousticness of 0.86 that earns a strong acoustic bonus. Right behind it is **Midnight Coding**, separated by just 0.09 points — the difference comes entirely from its slightly lower acousticness (0.71). Across the full list, every track in your top 5 leans acoustic and low-energy, which shows the scoring system has a clear sense of your vibe. The sleeper pick worth noting is **Spacewalk Thoughts** at #4 — it's ambient, not lofi, but its mood and energy feel emotionally coherent with what you're looking for.
-
-**Ranked results:**
-```
-1. Library Rain      — score 4.90  (all 4 criteria matched)
-2. Midnight Coding   — score 4.81  (lofi + chill + energy; lower acoustic bonus)
-3. Focus Flow        — score 4.09  (lofi + focused; not chill, slight mood miss)
-4. Spacewalk Thoughts— score 2.79  (ambient cross-genre; mood + energy match)
-5. Golden Hour       — score 2.73  (folk; acoustic bonus + energy proximity)
+Radiohead - Karma Police
+Portishead - Glory Box
+Bon Iver - Skinny Love
+The National - Bloodbuzz Ohio
 ```
 
-**What this shows:** RAG adds real value here. The scored list alone shows numbers; the AI summary explains *why* Library Rain and Midnight Coding are so close, and flags the cross-genre suggestion as intentional.
+**Groq inference:**
+```
+Vibe detected: Moody · Indie Pop · 40% energy · Acoustic preferred
+Reasoning: These artists share introspective, cinematic emotional character
+           with medium-low energy and a preference for acoustic texture.
+```
+
+**Top Spotify songs returned:** Real tracks scored by genre/mood/energy match — indie and alternative artists aligned with the inferred profile.
 
 ---
 
@@ -185,7 +176,7 @@ genre=rock, mood=intense, energy=1.8, likes_acoustic=False
 10:42:17 [WARNING] guardrails — Energy 1.80 outside [0, 1] — clamping to 1.00.
 ```
 
-**System behavior:** Continues processing with `energy=1.0` instead of crashing. The user sees their recommendations; the warning is logged for review. This mirrors how production systems handle invalid input — graceful degradation rather than hard failure.
+**System behavior:** Continues processing with `energy=1.0` instead of crashing. The user still gets recommendations; the warning is logged for review. Graceful degradation rather than hard failure.
 
 ---
 

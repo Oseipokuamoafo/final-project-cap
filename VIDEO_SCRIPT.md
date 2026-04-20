@@ -1,17 +1,18 @@
-# Loom Video Script — AI Music Recommender
-# ~5–7 minutes | No API key required
+# Loom Video Script — VibeFinder AI Music Recommender
+# ~5–7 minutes | Record your screen at localhost:8501
 
 ---
 
 ## BEFORE YOU HIT RECORD
 
-Open ONE terminal window and run:
-```
-cd /Users/geraldamoafo/Downloads/final-project-cap
-```
-
-Have this file open so you can read the lines while recording.
-Make your terminal font big (Cmd + on Mac).
+1. Run the Streamlit app:
+   ```
+   cd /Users/geraldamoafo/Downloads/final-project-cap
+   streamlit run src/app.py
+   ```
+2. Open http://localhost:8501 in your browser — make it fullscreen
+3. Open a second terminal tab for the CLI demo at the end
+4. Make your browser font large (Cmd + on Mac)
 
 ---
 
@@ -19,196 +20,160 @@ Make your terminal font big (Cmd + on Mac).
 
 ---
 
-### INTRO (30 seconds)
-
-*Just look at the camera / screen*
+### INTRO  (30 seconds)
+*Face camera or just speak over your screen*
 
 SAY:
-"Hi, I'm Gerald. This is my Applied AI capstone project —
-an AI-powered music recommender that combines a scoring
-engine with a RAG pipeline built on Claude. Let me show
-you how it works end to end."
+"Hey, I'm Gerald. This is VibeFinder — my Applied AI capstone project.
+It's a music recommender that doesn't just let you pick a genre and
+energy level. It actually listens to how you describe your mood, or
+looks at what you've been listening to, and figures out what you need
+to hear next. It pulls real songs from Spotify, scores them, and then
+uses a free AI model to summarize why those songs fit you.
+Let me show you how it works."
 
 ---
 
-### SECTION 1 — End-to-End Demo, Profile 1 (1 min)
+### SECTION 1 — Tell Me Your Mood  (90 seconds)
+*App is open on Mode 1: "Tell me your mood"*
+
+SAY:
+"The first mode is the most natural one. You just tell the app
+how you're feeling — in plain English, however you'd describe it
+to a friend."
+
+*Click the text area and type slowly so viewers can read:*
+TYPE: "I've been stressed from school all week and I just want
+something calm to help me decompress tonight"
+
+SAY:
+"I'm not picking a genre. I'm not setting an energy slider.
+I'm just describing my state of mind."
+
+*Click "Find my songs"*
+
+SAY:
+"The app sends that to Groq — which is a completely free AI model —
+and it extracts structured music preferences from the description.
+Watch what it comes back with."
+
+*Point at the detected vibe banner*
+
+SAY:
+"Relaxed. Lofi. 20% energy. Acoustic. That's exactly right.
+And underneath it explains its reasoning — it inferred I need
+calming, low-energy music with acoustic texture.
+Then it goes straight to Spotify and pulls real songs."
+
+*Point at the song cards*
+
+SAY:
+"These are real Spotify tracks. Real artists. Real song titles.
+Number one right here — look at the title and artist —
+it matched lofi, relaxed mood, low energy. And the AI summary
+above explains specifically why these songs fit the profile,
+not just what the scores were."
+
+---
+
+### SECTION 2 — Guess from My Recent Songs  (90 seconds)
+*Click Mode 2: "Guess from my recent songs"*
+
+SAY:
+"The second mode is the one I'm most proud of.
+Instead of telling the app your mood, you tell it what
+you've been listening to — and it figures out your mood
+from that."
+
+*Click the text area and type:*
+```
+Radiohead - Karma Police
+Portishead - Glory Box
+Bon Iver - Skinny Love
+The National - Bloodbuzz Ohio
+```
+
+SAY:
+"These are four songs I might have had on repeat.
+I haven't said anything about how I feel.
+The AI has to read the vibe from the music itself."
+
+*Click "Guess my mood & find songs"*
+
+SAY:
+"It's analyzing the typical genre, energy level, and emotional
+character of those artists. Radiohead and Portishead are
+dark, cinematic, low-energy. Bon Iver is introspective acoustic.
+The National is melancholy indie rock."
+
+*Point at the detected vibe*
+
+SAY:
+"Moody. Indie pop. 40% energy. Acoustic preferred.
+That's a genuinely accurate read of what those four artists
+have in common emotionally. Now look at the recommendations —
+these are real Spotify songs that match that inferred state."
+
+---
+
+### SECTION 3 — Manual Mode  (45 seconds)
+*Click Mode 3: "Set manually"*
+
+SAY:
+"There's also a manual mode for when you know exactly what
+you want. You pick a genre, mood, energy level — same as
+a traditional music app. But even here, Groq generates an
+AI summary explaining why the top picks fit your profile,
+and the songs are still live from Spotify."
+
+*Quickly set rock / intense / energy 0.9 and submit*
+
+SAY:
+"Rock, intense, high energy. Real songs from Spotify scored
+by the engine and summarized by the AI."
+
+---
+
+### SECTION 4 — CLI and Reliability Report  (60 seconds)
+*Switch to terminal*
+
+SAY:
+"Under the hood, the same engine powers a command-line interface.
+Let me run the reliability report — this is a script that checks
+every part of the system automatically."
 
 TYPE:
 ```
-python3 demo.py
+python3 reliability_report.py
 ```
 
-*Press Enter at the first pause*
+*Wait for output*
 
 SAY:
-"The system takes a user's taste profile — genre, mood,
-energy level, and whether they like acoustic music —
-and scores every song in the catalog against it."
+"35 checks. Core reliability — 16 out of 16. RAG enhancement —
+5 out of 5. Agentic workflow — 6 out of 6. Style specialization —
+8 out of 8. 35 out of 35 total. No API key required to run these —
+the LLM calls are mocked in the test suite.
 
-*Press Enter to run Demo 1*
-
-SAY:
-"Here's a high-energy pop fan. The top result is Sunrise City
-with a score of 4.47. You can see exactly why — genre match
-gives plus 2, mood match gives plus 1.5, and the energy
-of 0.82 is almost identical to the target of 0.85.
-Every recommendation is fully explainable."
-
-*Point at the confidence number on screen*
-
-SAY:
-"The confidence score tells us the top song hit 99% of the
-theoretical maximum — meaning the catalog had a strong
-answer for this user."
+Average confidence score across all profiles is 99%.
+Every recommendation is traceable to a score,
+every score is explainable, every behavior is tested."
 
 ---
 
-### SECTION 2 — Profile 2, Acoustic (45 seconds)
-
-*Press Enter for Demo 2*
+### OUTRO  (30 seconds)
 
 SAY:
-"Second profile — a chill lofi listener who likes acoustic
-tracks. Library Rain comes in at 4.90. The interesting thing
-here is that it beats the second result by only 0.09 points —
-and that entire gap comes from the acoustic bonus.
-Library Rain has an acousticness of 0.86 versus 0.71 for
-Midnight Coding. That's a micro-decision the scoring engine
-makes automatically."
-
----
-
-### SECTION 3 — Guardrails (1 min)
-
-*Press Enter for Demo 3*
-
-SAY:
-"Now let me show the guardrails. These run before any scoring
-happens."
-
-*Point at Test A output*
-
-SAY:
-"First — if someone passes in an energy of 1.9, which is out
-of the valid range, the system clamps it to 1.0 and logs a
-warning. It doesn't crash."
-
-*Point at Test B*
-
-SAY:
-"Second — an unknown genre like 'country' isn't in the catalog.
-The system warns that no genre-match bonus will apply but
-keeps running. It still returns the best available match."
-
-*Point at Test C*
-
-SAY:
-"Third — if someone passes the string 'loud' as the energy
-value, the system raises a clear validation error and stops
-before any scoring runs. The error message tells you exactly
-what went wrong."
-
----
-
-### SECTION 4 — RAG Pipeline (1 min)
-
-*Press Enter for Demo 4*
-
-SAY:
-"This is the RAG enhancement. RAG stands for
-Retrieval-Augmented Generation — the AI retrieves information
-first, then generates a response based on what it found."
-
-*Point at the 'without' section*
-
-SAY:
-"Without the knowledge base, Claude only sees the song scores.
-It can say 'Library Rain scored 4.90' but nothing more."
-
-*Point at the 'with' section*
-
-SAY:
-"With the knowledge base enabled, the system also retrieves
-genre and mood descriptions from a second document. So Claude
-now knows that lofi is defined by vinyl crackle, tape hiss,
-and warm compressed sound — and that chill and relaxed are
-emotionally adjacent moods. That context produces measurably
-richer output. The LLM is writing about the music, not just
-restating numbers."
-
----
-
-### SECTION 5 — Agentic Workflow (1 min)
-
-*Press Enter for Demo 5*
-
-SAY:
-"This is the agentic workflow. Instead of a fixed pipeline,
-the agent takes a natural language query and figures out
-what to do on its own using tool calls."
-
-*Point at Step 1*
-
-SAY:
-"Step one — parse preferences. The agent calls a tool
-that extracts structured preferences from the free-text query.
-It figures out genre equals lofi, mood equals chill,
-energy around 0.4."
-
-*Point at Step 2*
-
-SAY:
-"Step two — retrieve songs. It calls the scoring engine
-with those preferences and gets back the top results
-with a confidence of 98%."
-
-*Point at Step 3*
-
-SAY:
-"Step three — evaluate coverage. It checks whether the
-results are good enough. In this case they are, so it
-moves straight to the final response."
-
-SAY:
-"If coverage had been poor — say, for a genre not in the
-catalog — the agent would have automatically retried
-with adjusted parameters. That's what makes it agentic:
-it checks its own work."
-
----
-
-### SECTION 6 — Reliability Report (45 seconds)
-
-*Press Enter for Demo 6*
-
-SAY:
-"Finally — the reliability report. This is a script that
-runs 35 automated checks across every part of the system
-and prints a pass-fail summary."
-
-*Point at the numbers*
-
-SAY:
-"16 out of 16 core reliability checks pass — including
-correctness for all three profiles, confidence in valid
-range, determinism across three runs, and no negative scores.
-5 out of 5 RAG enhancement checks. 6 out of 6 agentic
-workflow checks. 8 out of 8 style specialization checks.
-35 out of 35 total, no API key required."
-
----
-
-### OUTRO (30 seconds)
-
-SAY:
-"The full code is on GitHub at
+"Everything I just showed you — the mood parsing, the Spotify
+integration, the RAG pipeline, the guardrails, the agentic
+workflow, the test suite — is all on GitHub at
 github.com/Oseipokuamoafo/final-project-cap.
 
-What I built here is a system where every recommendation
-is traceable, every failure is handled, and every claim
-about the AI's behavior is backed by an automated check.
-That's what I think applied AI engineering looks like.
-Thanks for watching."
+What this project taught me is that the AI part of an AI system
+is maybe 20% of the work. The other 80% is building reliable
+retrieval, honest confidence scores, real data sources,
+and tests that prove it works. That's the engineering that
+makes the AI actually useful. Thanks for watching."
 
 *Stop recording*
 
@@ -217,8 +182,11 @@ Thanks for watching."
 ## AFTER RECORDING
 
 1. Upload to Loom at loom.com
-2. Copy the share link
-3. Open README.md line 5 and replace:
-   [Add Loom link here after recording]
+2. Copy the share link (e.g. https://www.loom.com/share/abc123...)
+3. Open README.md and replace the placeholder on line 5:
+      [Add Loom link here after recording]
    with your actual Loom URL
-4. Commit and push to GitHub
+4. Run:
+      git add README.md
+      git commit -m "Add Loom video walkthrough link"
+      git push origin main
