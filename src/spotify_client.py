@@ -149,7 +149,7 @@ def fetch_songs_by_genre(
     genre: str,
     client_id: str,
     client_secret: str,
-    limit: int = 20,
+    limit: int = 10,
 ) -> List[Dict]:
     """
     Search Spotify for real tracks in *genre* and return scoring-engine-compatible

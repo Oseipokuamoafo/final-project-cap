@@ -34,7 +34,7 @@ def get_spotify_songs(genre: str) -> list:
         genre,
         os.getenv("SPOTIFY_CLIENT_ID", ""),
         os.getenv("SPOTIFY_CLIENT_SECRET", ""),
-        limit=20,
+        limit=10,
     )
 
 
