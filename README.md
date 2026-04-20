@@ -301,16 +301,6 @@ The other surprise was determinism. Calling `recommend_songs` three times with i
 
 ---
 
-### Collaboration with AI during this project
-
-This project was built in active collaboration with Claude Code (claude-sonnet-4-6), which wrote the majority of the implementation code including the RAG pipeline, guardrails, Streamlit UI, and test suite.
-
-**One instance where the AI gave a genuinely helpful suggestion:**
-The decision to separate the RAG pipeline into three explicit stages — retrieve, augment, generate — with the LLM receiving only pre-ranked, scored songs as context was the right architectural call. The alternative would have been to describe user preferences to the LLM and ask it to recommend songs from imagination, which would have made the system unverifiable and untestable. By treating the LLM as a summarizer of structured retrieval output rather than a reasoner over an open question, the system became auditable: every recommendation can be traced back to a deterministic score, and the LLM's role is clearly bounded. That boundary made the test suite possible.
-
-**One instance where the AI's suggestion was flawed:**
-The confidence scoring implementation has a subtle flaw that went unchallenged during development. The formula — `top_score / max_possible_score` — produces high numbers (98–100%) because the test profiles were designed to match the catalog. But the metric gives no signal when the catalog simply has nothing good to offer. If a user asks for "country" music (not in the catalog), the system scores every song against country, the highest scorer wins, and the confidence calculation gives that winner a number — possibly 30% — that looks like a low-confidence answer. But the real answer is "this catalog cannot serve country music at all." The confidence score doesn't distinguish between "weak match found" and "no relevant content exists." The AI generated the metric without flagging this limitation, and it required stepping back from the numbers to notice that 99% average confidence on a 18-song catalog designed for exactly these profiles is a measurement of circularity, not quality.
-
 ---
 
 ## Portfolio Reflection
