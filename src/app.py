@@ -4,7 +4,10 @@ import logging
 import os
 import sys
 
+from dotenv import load_dotenv
 import streamlit as st
+
+load_dotenv()
 
 sys.path.insert(0, os.path.dirname(__file__))
 
