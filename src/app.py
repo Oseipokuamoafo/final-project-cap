@@ -89,17 +89,29 @@ def _show_results(prefs: dict, songs: list, k: int) -> None:
     st.metric("Match Confidence", f"{conf:.0%}",
               help="Top song's score as % of the theoretical maximum.")
 
-    st.subheader(f"Top {k} Songs for You")
+    st.subheader(f"🎶 Top {k} Songs for You")
     for rank, (song, score, explanation) in enumerate(retrieved, 1):
-        with st.expander(
-            f"{rank}. **{song['title']}** — {song['artist']}  ·  score: {score:.2f}"
-        ):
-            c1, c2 = st.columns(2)
-            c1.metric("Genre",       song["genre"])
-            c1.metric("Mood",        song["mood"])
-            c2.metric("Energy",      f"{song['energy']:.2f}")
-            c2.metric("Acousticness", f"{song['acousticness']:.2f}")
-            st.caption(f"Why: {explanation}")
+        with st.container(border=True):
+            # Rank badge + title + artist always visible
+            col_rank, col_info = st.columns([1, 11])
+            col_rank.markdown(
+                f"<div style='font-size:1.6rem;font-weight:700;color:#1DB954;"
+                f"text-align:center;padding-top:4px'>{rank}</div>",
+                unsafe_allow_html=True,
+            )
+            with col_info:
+                st.markdown(f"### {song['title']}")
+                st.markdown(
+                    f"**{song['artist']}**",
+                )
+
+            # Details row
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Genre",        song["genre"].title())
+            c2.metric("Mood",         song["mood"].capitalize())
+            c3.metric("Energy",       f"{song['energy']:.0%}")
+            c4.metric("Match Score",  f"{score:.2f}")
+            st.caption(f"💡 {explanation}")
 
 
 # ── Page ──────────────────────────────────────────────────────────────────────
