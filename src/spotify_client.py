@@ -71,6 +71,8 @@ def _search_tracks(query: str, token: str, limit: int = 20) -> List[Dict]:
         params={"q": query, "type": "track", "limit": limit, "market": "US"},
         timeout=10,
     )
+    if r.status_code == 400:
+        return []          # invalid genre filter — caller will try plain-text fallback
     r.raise_for_status()
     return r.json().get("tracks", {}).get("items", []) or []
 
@@ -159,8 +161,10 @@ def fetch_songs_by_genre(
     try:
         token = _get_token(client_id, client_secret)
 
-        # Try genre: filter first; some genres need a plain text query
+        # Try genre: filter; fall back to plain-text if Spotify returns 400 or nothing
         tracks = _search_tracks(f"genre:{genre}", token, limit=limit)
+        if not tracks:
+            tracks = _search_tracks(f"{genre} music", token, limit=limit)
         if not tracks:
             tracks = _search_tracks(genre, token, limit=limit)
 
