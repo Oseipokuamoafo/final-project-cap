@@ -57,26 +57,9 @@ infer their current mood and what they would enjoy hearing next."""
 def _call_llm(user_prompt: str) -> Optional[Dict]:
     text = None
 
-    groq_key = os.getenv("GROQ_API_KEY")
-    if groq_key:
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+    if anthropic_key:
         try:
-            from groq import Groq
-            completion = Groq(api_key=groq_key).chat.completions.create(
-                model="llama-3.1-8b-instant",
-                messages=[
-                    {"role": "system", "content": _SYSTEM},
-                    {"role": "user",   "content": user_prompt},
-                ],
-                max_tokens=200,
-                temperature=0.2,
-            )
-            text = completion.choices[0].message.content
-        except Exception as exc:
-            logger.warning("Groq unavailable (%s) — falling back to Anthropic.", exc)
-
-    if not text:
-        anthropic_key = os.getenv("ANTHROPIC_API_KEY")
-        if anthropic_key:
             import anthropic
             msg = anthropic.Anthropic(api_key=anthropic_key).messages.create(
                 model="claude-haiku-4-5-20251001",
@@ -85,6 +68,41 @@ def _call_llm(user_prompt: str) -> Optional[Dict]:
                 messages=[{"role": "user", "content": user_prompt}],
             )
             text = msg.content[0].text
+        except Exception as exc:
+            logger.warning("Anthropic unavailable (%s) — trying next backend.", exc)
+
+    if not text:
+        google_key = os.getenv("GOOGLE_API_KEY")
+        if google_key:
+            try:
+                import google.generativeai as genai
+                genai.configure(api_key=google_key)
+                model = genai.GenerativeModel(
+                    "gemini-1.5-flash",
+                    system_instruction=_SYSTEM,
+                )
+                resp = model.generate_content(user_prompt)
+                text = resp.text
+            except Exception as exc:
+                logger.warning("Gemini unavailable (%s) — trying next backend.", exc)
+
+    if not text:
+        groq_key = os.getenv("GROQ_API_KEY")
+        if groq_key:
+            try:
+                from groq import Groq
+                completion = Groq(api_key=groq_key).chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    messages=[
+                        {"role": "system", "content": _SYSTEM},
+                        {"role": "user",   "content": user_prompt},
+                    ],
+                    max_tokens=200,
+                    temperature=0.2,
+                )
+                text = completion.choices[0].message.content
+            except Exception as exc:
+                logger.warning("Groq unavailable (%s).", exc)
 
     if not text:
         raise RuntimeError("No LLM available for mood parsing.")

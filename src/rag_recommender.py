@@ -65,21 +65,31 @@ def _detect_backend(client) -> Tuple[str, object]:
             return "groq", client
         return "anthropic", client  # safe fallback for unknown mocks
 
-    groq_key = os.getenv("GROQ_API_KEY")
-    if groq_key:
-        from groq import Groq
-        logger.info("LLM backend: Groq (free tier)")
-        return "groq", Groq(api_key=groq_key)
-
     anthropic_key = os.getenv("ANTHROPIC_API_KEY")
     if anthropic_key:
         import anthropic as _anthropic
         logger.info("LLM backend: Anthropic Claude")
         return "anthropic", _anthropic.Anthropic(api_key=anthropic_key)
 
+    google_key = os.getenv("GOOGLE_API_KEY")
+    if google_key:
+        import google.generativeai as genai
+        genai.configure(api_key=google_key)
+        logger.info("LLM backend: Google Gemini (free)")
+        return "gemini", genai.GenerativeModel(
+            "gemini-1.5-flash",
+            system_instruction=_SYSTEM_PROMPT,
+        )
+
+    groq_key = os.getenv("GROQ_API_KEY")
+    if groq_key:
+        from groq import Groq
+        logger.info("LLM backend: Groq")
+        return "groq", Groq(api_key=groq_key)
+
     raise RuntimeError(
         "No LLM API key found.\n"
-        "  • Free option: set GROQ_API_KEY  (get one at https://console.groq.com)\n"
+        "  • Free option: set GOOGLE_API_KEY (get one at https://aistudio.google.com)\n"
         "  • Paid option: set ANTHROPIC_API_KEY (https://console.anthropic.com)"
     )
 
@@ -100,6 +110,12 @@ def _call_llm(backend: str, client, user_message: str) -> Tuple[str, Dict]:
             "input_tokens": completion.usage.prompt_tokens,
             "output_tokens": completion.usage.completion_tokens,
         }
+        return text, usage
+
+    if backend == "gemini":
+        resp = client.generate_content(user_message)
+        text = resp.text
+        usage = {"input_tokens": 0, "output_tokens": 0}
         return text, usage
 
     # Anthropic (default / test mock path)

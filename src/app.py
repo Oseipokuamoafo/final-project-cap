@@ -299,13 +299,15 @@ def get_spotify_songs(genre: str) -> list:
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def _has_llm() -> bool:
-    return bool(os.getenv("GROQ_API_KEY") or os.getenv("ANTHROPIC_API_KEY"))
+    return bool(os.getenv("ANTHROPIC_API_KEY") or os.getenv("GOOGLE_API_KEY") or os.getenv("GROQ_API_KEY"))
 
 
 def _llm_name() -> str:
     if os.getenv("ANTHROPIC_API_KEY"):
         return "Claude"
-    return "Groq" if os.getenv("GROQ_API_KEY") else "Claude"
+    if os.getenv("GOOGLE_API_KEY"):
+        return "Gemini"
+    return "Groq"
 
 
 def _load_songs_for_genre(genre: str) -> tuple[list, str]:
