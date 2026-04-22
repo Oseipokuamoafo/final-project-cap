@@ -292,6 +292,8 @@ GENRE_EMOJI = {
     "jazz": "🎷", "synthwave": "🌆", "indie pop": "🌿", "hip-hop": "🎤",
     "r&b": "🎵", "classical": "🎻", "metal": "⚡", "electronic": "🎛️",
     "folk": "🪕",
+    "afrobeats": "🌍", "afrosoul": "🌍", "afropop": "🌍",
+    "afroswing": "🌍", "amapiano": "🌍", "highlife": "🌍", "afro fusion": "🌍",
 }
 
 MOOD_EMOJI = {

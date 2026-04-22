@@ -19,6 +19,8 @@ _VALID_MOODS   = {"happy", "chill", "intense", "relaxed", "moody", "focused"}
 _VALID_GENRES  = {
     "pop", "lofi", "rock", "ambient", "jazz", "synthwave",
     "indie pop", "hip-hop", "r&b", "classical", "metal", "electronic", "folk",
+    "afrobeats", "afrosoul", "afropop", "afroswing", "amapiano",
+    "highlife", "afro fusion",
 }
 
 _SYSTEM = """\
@@ -27,7 +29,8 @@ recent listening history, extract structured music preferences.
 
 Valid moods  : happy, chill, intense, relaxed, moody, focused
 Valid genres : pop, lofi, rock, ambient, jazz, synthwave, indie pop, hip-hop, \
-r&b, classical, metal, electronic, folk
+r&b, classical, metal, electronic, folk, afrobeats, afrosoul, afropop, \
+afroswing, amapiano, highlife, afro fusion
 Energy       : 0.0 = very calm, 1.0 = very intense
 
 Respond with ONLY a JSON object — no markdown, no explanation, no extra text:

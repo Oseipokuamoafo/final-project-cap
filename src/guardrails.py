@@ -8,6 +8,9 @@ logger = logging.getLogger(__name__)
 VALID_GENRES = {
     "pop", "lofi", "rock", "ambient", "jazz", "synthwave",
     "indie pop", "hip-hop", "r&b", "classical", "metal", "electronic", "folk",
+    # African / Afro genres
+    "afrobeats", "afrosoul", "afropop", "afroswing", "amapiano",
+    "highlife", "afro fusion",
 }
 VALID_MOODS = {"happy", "chill", "intense", "relaxed", "moody", "focused"}
 
