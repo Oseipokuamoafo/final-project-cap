@@ -225,10 +225,23 @@ def rag_recommend(
         parts += ["", knowledge_snippet]
     user_message = "\n".join(parts)
 
-    # 3. Generate
+    # 3. Generate — try primary backend, fall back to Anthropic if it fails
     backend, actual_client = _detect_backend(client)
     logger.info("RAG 3/3 — calling %s (knowledge=%s)", backend, use_knowledge)
-    response_text, usage = _call_llm(backend, actual_client, user_message)
+    try:
+        response_text, usage = _call_llm(backend, actual_client, user_message)
+    except Exception as exc:
+        if backend == "groq":
+            logger.warning("Groq failed (%s) — falling back to Anthropic.", exc)
+            anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+            if not anthropic_key:
+                raise RuntimeError("Groq unavailable and no ANTHROPIC_API_KEY set.") from exc
+            import anthropic as _anthropic
+            backend = "anthropic"
+            actual_client = _anthropic.Anthropic(api_key=anthropic_key)
+            response_text, usage = _call_llm(backend, actual_client, user_message)
+        else:
+            raise
     logger.info("Generation done — input=%d tokens, output=%d tokens",
                 usage["input_tokens"], usage["output_tokens"])
 

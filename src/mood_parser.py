@@ -59,18 +59,22 @@ def _call_llm(user_prompt: str) -> Optional[Dict]:
 
     groq_key = os.getenv("GROQ_API_KEY")
     if groq_key:
-        from groq import Groq
-        completion = Groq(api_key=groq_key).chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=[
-                {"role": "system", "content": _SYSTEM},
-                {"role": "user",   "content": user_prompt},
-            ],
-            max_tokens=200,
-            temperature=0.2,
-        )
-        text = completion.choices[0].message.content
-    else:
+        try:
+            from groq import Groq
+            completion = Groq(api_key=groq_key).chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=[
+                    {"role": "system", "content": _SYSTEM},
+                    {"role": "user",   "content": user_prompt},
+                ],
+                max_tokens=200,
+                temperature=0.2,
+            )
+            text = completion.choices[0].message.content
+        except Exception as exc:
+            logger.warning("Groq unavailable (%s) — falling back to Anthropic.", exc)
+
+    if not text:
         anthropic_key = os.getenv("ANTHROPIC_API_KEY")
         if anthropic_key:
             import anthropic
@@ -83,7 +87,7 @@ def _call_llm(user_prompt: str) -> Optional[Dict]:
             text = msg.content[0].text
 
     if not text:
-        raise RuntimeError("No LLM key available for mood parsing.")
+        raise RuntimeError("No LLM available for mood parsing.")
 
     match = re.search(r"\{.*\}", text, re.DOTALL)
     if not match:
