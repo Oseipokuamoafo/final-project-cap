@@ -195,57 +195,74 @@ SPOTIFY_CSS = """
   .vf-card {
     background: #181818;
     border-radius: 12px;
-    padding: 18px 22px;
-    margin-bottom: 10px;
+    padding: 14px 18px;
+    margin-bottom: 8px;
     border: 1px solid #282828;
     transition: background 0.2s ease, border-color 0.2s ease;
-    display: flex; align-items: center; gap: 18px;
+    display: flex; align-items: center; gap: 16px;
   }
   .vf-card:hover { background: #242424; border-color: #404040; }
+  .vf-card.top-card { border-color: #1DB954; }
 
   .vf-card-rank {
-    font-size: 1.8rem; font-weight: 800;
-    color: #1DB954; min-width: 36px; text-align: center;
+    font-size: 1.4rem; font-weight: 800;
+    color: #535353; min-width: 28px; text-align: center;
     line-height: 1;
   }
-  .vf-card-rank.top { font-size: 2.2rem; }
+  .vf-card-rank.top { color: #1DB954; font-size: 1.6rem; }
 
   .vf-card-art {
-    width: 52px; height: 52px; border-radius: 6px;
+    width: 56px; height: 56px; border-radius: 6px;
     background: linear-gradient(135deg,#1DB954,#191414);
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.4rem; flex-shrink: 0;
+    font-size: 1.4rem; flex-shrink: 0; overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+  .vf-card-art img {
+    width: 100%; height: 100%; object-fit: cover; border-radius: 6px;
   }
 
   .vf-card-info { flex: 1; min-width: 0; }
   .vf-card-title {
     font-size: 1rem; font-weight: 700; color: #FFFFFF;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-decoration: none;
   }
-  .vf-card-artist { font-size: 0.85rem; color: #B3B3B3; margin-top: 2px; }
-  .vf-card-explanation { font-size: 0.78rem; color: #727272; margin-top: 6px; }
+  .vf-card-title a { color: #FFFFFF; text-decoration: none; }
+  .vf-card-title a:hover { color: #1DB954; text-decoration: underline; }
+  .vf-card-artist { font-size: 0.85rem; color: #B3B3B3; margin-top: 1px; }
+  .vf-card-album  { font-size: 0.78rem; color: #535353; margin-top: 1px;
+                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .vf-card-explanation { font-size: 0.76rem; color: #727272; margin-top: 6px; }
 
-  .vf-card-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .vf-card-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; align-items: center; }
   .vf-badge {
     background: #282828; color: #B3B3B3;
-    border-radius: 4px; padding: 3px 10px;
-    font-size: 0.72rem; font-weight: 600;
+    border-radius: 4px; padding: 2px 8px;
+    font-size: 0.70rem; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.06em;
   }
   .vf-badge-green { background: #1a3a23; color: #1DB954; }
-
-  .vf-card-score {
-    text-align: right; flex-shrink: 0;
+  .vf-spotify-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #1DB954; color: #000 !important; text-decoration: none !important;
+    border-radius: 20px; padding: 3px 10px;
+    font-size: 0.70rem; font-weight: 700; letter-spacing: 0.04em;
+    transition: background 0.15s;
   }
-  .vf-score-val { font-size: 1.1rem; font-weight: 700; color: #FFFFFF; }
-  .vf-score-label { font-size: 0.68rem; color: #727272; text-transform: uppercase; letter-spacing: 0.06em; }
+  .vf-spotify-btn:hover { background: #1ed760; }
+
+  .vf-card-score { text-align: right; flex-shrink: 0; min-width: 64px; }
+  .vf-score-val { font-size: 1.05rem; font-weight: 700; color: #FFFFFF; }
+  .vf-score-label { font-size: 0.65rem; color: #727272; text-transform: uppercase; letter-spacing: 0.06em; }
+  .vf-duration { font-size: 0.78rem; color: #535353; margin-top: 4px; }
   .vf-energy-bar-wrap { margin-top: 6px; }
   .vf-energy-bar {
     height: 3px; border-radius: 2px;
     background: linear-gradient(90deg,#1DB954,#1ed760);
     min-width: 4px;
   }
-  .vf-energy-bg { height: 3px; border-radius: 2px; background: #333; width: 80px; }
+  .vf-energy-bg { height: 3px; border-radius: 2px; background: #333; width: 64px; }
 
   /* ── Section title ── */
   .vf-section-title {
@@ -344,36 +361,60 @@ def _render_vibe_banner(parsed: dict) -> None:
 
 
 def _render_card(rank: int, song: dict, score: float, explanation: str) -> None:
-    genre   = song.get("genre", "")
-    mood    = song.get("mood", "")
-    energy  = song.get("energy", 0.5)
-    icon    = GENRE_EMOJI.get(genre, "🎵")
-    rank_cls = "top" if rank == 1 else ""
-    energy_w = max(4, int(energy * 80))
+    genre       = song.get("genre", "")
+    mood        = song.get("mood", "")
+    energy      = song.get("energy", 0.5)
+    icon        = GENRE_EMOJI.get(genre, "🎵")
+    artwork_url = song.get("artwork_url", "")
+    spotify_url = song.get("spotify_url", "")
+    album       = song.get("album", "")
+    duration    = song.get("duration", "")
+    rank_cls    = "top" if rank == 1 else ""
+    card_cls    = "vf-card top-card" if rank == 1 else "vf-card"
+    energy_w    = max(4, int(energy * 64))
+
+    # Album art: real image or emoji fallback
+    if artwork_url:
+        art_html = f'<img src="{artwork_url}" alt="album art">'
+    else:
+        art_html = icon
+
+    # Song title — clickable if Spotify URL available
+    if spotify_url:
+        title_html = f'<a href="{spotify_url}" target="_blank">{song["title"]}</a>'
+    else:
+        title_html = song["title"]
+
+    spotify_btn = (f'<a href="{spotify_url}" target="_blank" class="vf-spotify-btn">▶ Play on Spotify</a>'
+                   if spotify_url else "")
+    album_line  = f'<div class="vf-card-album">{album}</div>' if album else ""
+    duration_el = f'<div class="vf-duration">{duration}</div>' if duration else ""
 
     st.markdown(f"""
-    <div class="vf-card">
+    <div class="{card_cls}">
       <div class="vf-card-rank {rank_cls}">{rank}</div>
-      <div class="vf-card-art">{icon}</div>
+      <div class="vf-card-art">{art_html}</div>
       <div class="vf-card-info">
-        <div class="vf-card-title">{song['title']}</div>
+        <div class="vf-card-title">{title_html}</div>
         <div class="vf-card-artist">{song['artist']}</div>
+        {album_line}
         <div class="vf-card-badges">
           <span class="vf-badge vf-badge-green">{genre.title()}</span>
           <span class="vf-badge">{mood.capitalize()}</span>
-          {"<span class='vf-badge'>🎸 Acoustic</span>" if song.get('acoustic') else ""}
+          {spotify_btn}
         </div>
         <div class="vf-card-explanation">{explanation}</div>
       </div>
       <div class="vf-card-score">
         <div class="vf-score-val">{score:.2f}</div>
         <div class="vf-score-label">Score</div>
+        {duration_el}
         <div class="vf-energy-bar-wrap">
           <div class="vf-energy-bg">
             <div class="vf-energy-bar" style="width:{energy_w}px"></div>
           </div>
         </div>
-        <div class="vf-score-label" style="margin-top:3px">{energy:.0%} energy</div>
+        <div class="vf-score-label" style="margin-top:3px">{energy:.0%} nrg</div>
       </div>
     </div>""", unsafe_allow_html=True)
 

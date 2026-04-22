@@ -1,10 +1,8 @@
 """
 Spotify client using SpotAPI — no API keys, no result limits.
 
-SpotAPI hits Spotify's internal partner API directly, bypassing the
-10-result cap and audio-features restrictions that affect official dev apps.
-
-No credentials required. Install: pip install spotapi pymongo redis
+Extracts real track data: title, artist, album, artwork, Spotify link,
+duration, and estimated audio features derived from genre.
 """
 
 import logging
@@ -14,7 +12,6 @@ from spotapi import Public
 
 logger = logging.getLogger(__name__)
 
-# Genre → energy estimate (Spotify doesn't expose audio features publicly)
 _GENRE_ENERGY: Dict[str, float] = {
     "metal": 0.92, "punk": 0.88, "edm": 0.88, "electronic": 0.85,
     "hard rock": 0.85, "dance": 0.82, "synthwave": 0.78,
@@ -41,51 +38,71 @@ _GENRE_MOOD: Dict[str, str] = {
     "classical": "relaxed", "jazz": "relaxed", "folk": "relaxed",
     "blues": "moody", "indie": "moody", "r&b": "moody",
     "hip-hop": "focused", "hip hop": "focused", "synthwave": "focused",
+    "indie pop": "moody",
 }
 
 
+def _ms_to_duration(ms: int) -> str:
+    secs = ms // 1000
+    return f"{secs // 60}:{secs % 60:02d}"
+
+
 def _parse_track(item: Dict, genre: str, idx: int) -> Dict | None:
-    """Extract a scoring-engine-compatible song dict from a SpotAPI track item."""
     try:
         track = item.get("item", {}).get("data", {})
         title = track.get("name", "").strip()
         if not title:
             return None
 
+        # Artists
         artists = track.get("artists", {}).get("items", [])
         artist = ", ".join(a["profile"]["name"] for a in artists if a.get("profile"))
 
+        # Album
+        album_data = track.get("albumOfTrack", {})
+        album_name = album_data.get("name", "")
+
+        # Album artwork — prefer 300px, fall back to 640px
+        artwork_url = ""
+        sources = album_data.get("coverArt", {}).get("sources", [])
+        for src in sources:
+            if src.get("height") == 300:
+                artwork_url = src["url"]
+                break
+        if not artwork_url and sources:
+            artwork_url = sources[-1].get("url", "")
+
+        # Spotify link
+        track_id = track.get("id", "")
+        spotify_url = f"https://open.spotify.com/track/{track_id}" if track_id else ""
+
+        # Duration
+        duration_ms = track.get("duration", {}).get("totalMilliseconds", 0)
+        duration = _ms_to_duration(duration_ms) if duration_ms else ""
+
+        # Estimated audio features from genre
         energy       = _GENRE_ENERGY.get(genre, 0.6)
         acousticness = _GENRE_ACOUSTIC.get(genre, 0.3)
         mood         = _GENRE_MOOD.get(genre, "chill")
-        valence      = round(energy * 0.85, 2)
-        danceability = round(min(1.0, energy * 1.05), 2)
-        tempo        = int(60 + energy * 100)
 
         return {
-            "id": f"sp_{idx:03d}",
-            "title": title,
-            "artist": artist or "Unknown",
-            "genre": genre,
-            "mood": mood,
-            "energy": round(energy, 2),
+            "id":           f"sp_{idx:03d}",
+            "title":        title,
+            "artist":       artist or "Unknown",
+            "album":        album_name,
+            "genre":        genre,
+            "mood":         mood,
+            "energy":       round(energy, 2),
             "acousticness": round(acousticness, 2),
-            "valence": valence,
-            "danceability": danceability,
-            "tempo_bpm": tempo,
+            "artwork_url":  artwork_url,
+            "spotify_url":  spotify_url,
+            "duration":     duration,
         }
     except Exception:
         return None
 
 
 def fetch_songs_by_genre(genre: str, limit: int = 20, **_kwargs) -> List[Dict]:
-    """
-    Search Spotify for *limit* real tracks matching *genre* using SpotAPI.
-    No API keys required. Returns [] on failure so callers can fall back.
-
-    Extra keyword arguments (**_kwargs) are accepted but ignored — this keeps
-    the signature compatible with call sites that still pass client_id/secret.
-    """
     songs: List[Dict] = []
     queries = [f"{genre} music", genre]
 
@@ -104,7 +121,6 @@ def fetch_songs_by_genre(genre: str, limit: int = 20, **_kwargs) -> List[Dict]:
                     break
         except Exception as exc:
             logger.warning("SpotAPI search failed for query=%r: %s", query, exc)
-            continue
 
     logger.info("SpotAPI: %d songs fetched for genre=%s", len(songs), genre)
     return songs
